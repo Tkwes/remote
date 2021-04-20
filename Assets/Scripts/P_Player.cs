@@ -1,29 +1,39 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class P_Player : MonoBehaviour
 {
+    [Header("Player")]
     // movimentação
     private float velocidade = 10f;
     private bool noChao = false;
     private float pulo = 10f;
-    public Rigidbody rb;
+    Rigidbody rb;
+    PhotonView MyPhotonView;
 
     //sistema de troca
+    [Header("Armas")]
+    public GameObject arm;
+    public GameObject arma1_O, arma2_O, arma3_O;
     bool arma1, arma2, arma3; // permite ativar ou nao as armas 
-    public GameObject arma1_O, arma2_O, arma3_O; //
     LookAtMouse Script_Armas; //chama script do suporte arma
 
     //powerup Camera
+    [Header("Poweup")]
     bool camera;
     float Timer_Camera = 0;
     float Valor_Camera = 0;
 
+    [Header("Camera")]
     public Camera Camera_hud;
 
     void Start()
     {
+        MyPhotonView = GetComponent<PhotonView>();
+        rb = GetComponent<Rigidbody>();// movimentação
+
         //armas desativadas coleta
         arma1 = false;
         arma2 = false;
@@ -32,22 +42,31 @@ public class P_Player : MonoBehaviour
         arma1_O.SetActive(false);
         arma2_O.SetActive(false);
         arma3_O.SetActive(false);
-        //*
-
         //powerUps
         camera = false;
+        
 
-
-        rb = GetComponent<Rigidbody>();// movimentação
-
+        if (!MyPhotonView.IsMine)//Verificando se o player sou eu
+        {
+            Camera_hud.gameObject.SetActive(false);
+        }
     }
+
     void Update()
     {
-        movimentação();
-        trocadeArmas();
+        if (MyPhotonView.IsMine)
+        {
+            Movimentação();
+        }
+        else
+        {
+            Camera_hud.gameObject.SetActive(false);
+        }
+        TrocadeArmas();
         PowerCamera();
     }
-    void movimentação()
+
+    void Movimentação()
     {
         transform.position += new Vector3(Input.GetAxis("Horizontal") * velocidade * Time.deltaTime, 0, 0);
 
@@ -61,7 +80,8 @@ public class P_Player : MonoBehaviour
             }
         }
     }
-    void trocadeArmas()
+
+    void TrocadeArmas()
     {
         //seleçao de armas pelo alphanumerico
         if(Input.GetKeyDown(KeyCode.Alpha1) && arma1 == true)//ativa e desativa armas ja pegadas pelo mapa
@@ -129,5 +149,11 @@ public class P_Player : MonoBehaviour
             Destroy(other.gameObject);//destroy objeto  
             Timer_Camera = 5;//timer para limite de uso
         }
+    }
+
+    [PunRPC]
+    public void MoveArm()
+    {
+        
     }
 }

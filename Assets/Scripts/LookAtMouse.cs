@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class LookAtMouse : MonoBehaviour
 {
@@ -12,17 +13,26 @@ public class LookAtMouse : MonoBehaviour
     private float velo_flecha = 500f;
     public float firerate = 1f;
     private float proxTiro = 0f;
+    PhotonView view;
 
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
+        //player = GameObject.Find("Player");
     }
 
-    // Update is called once per frame
     void Update()
-    { 
+    {
+        view = gameObject.GetComponentsInParent<PhotonView>()[0];
+        if (!view.GetComponent<PhotonView>().IsMine)
+        {
+            return;
+        }
+        else
+        {
+            //view.RPC("MoveArm", RpcTarget.All);
+        }
+        
+
         if(Input.GetKeyDown(KeyCode.Mouse1) && Time.time >proxTiro)
         {
             proxTiro = Time.time + firerate;
@@ -30,10 +40,8 @@ public class LookAtMouse : MonoBehaviour
             spawnBullet.AddForce(ponta.right * velo_flecha);
         }
 
-
         var dir = Input.mousePosition - Camera.main.WorldToScreenPoint(transform.position);
         var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
     }
 }
